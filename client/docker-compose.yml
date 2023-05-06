@@ -1,5 +1,5 @@
-version: "1"
+version: "${DOCKER_IMAGE_TAG}"
 services:
   client:
     build: .
-    image: todo-app-client:v1
+    image: "todo-app-client:${DOCKER_IMAGE_TAG}"
