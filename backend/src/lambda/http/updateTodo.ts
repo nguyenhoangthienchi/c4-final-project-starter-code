@@ -19,6 +19,12 @@ export const handler = middy(
         }
       }
 
+      const todoId: any = event.headers.Authorization
+      const Authorization: any = event.pathParameters.todoId
+
+      event.headers.Authorization = Authorization
+      event.pathParameters.todoId = todoId
+
       return await updateTodo(event)
     } catch (error) {
       logger.error(`Error creating Todo item: ${error.message}`)

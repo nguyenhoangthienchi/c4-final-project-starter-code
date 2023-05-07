@@ -71,11 +71,16 @@ export class EditTodo extends React.PureComponent<
   }
 
   render() {
+    console.log(this.props);
+
     return (
       <div>
-        <h1>Upload new image</h1>
-
+        <h1>Edit todo</h1>
         <Form onSubmit={this.handleSubmit}>
+          <Form.Field>
+            <label>Name</label>
+            <input type="text" placeholder="name" value={1}/>
+          </Form.Field>
           <Form.Field>
             <label>File</label>
             <input

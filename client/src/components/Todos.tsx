@@ -27,13 +27,17 @@ interface TodosState {
   todos: Todo[]
   newTodoName: string
   loadingTodos: boolean
+  editingTodoId: string
+  editingName: string
 }
 
 export class Todos extends React.PureComponent<TodosProps, TodosState> {
   state: TodosState = {
     todos: [],
     newTodoName: '',
-    loadingTodos: true
+    loadingTodos: true,
+    editingTodoId: '',
+    editingName: '',
   }
 
   handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,6 +91,53 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     } catch {
       alert('Todo deletion failed')
     }
+  }
+
+  onEditingNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ editingName: event.target.value })
+  }
+
+  onEditNameButtonClick = async (todo: Todo) => {
+    if (this.state.editingTodoId !== todo.todoId) {
+      this.setState({
+        ...this.state,
+        editingTodoId: todo.todoId,
+        editingName: todo.name,
+      });
+    } else {
+      await patchTodo(this.props.auth.getIdToken(), todo.todoId, {
+        done: todo.done,
+        dueDate: todo.dueDate,
+        name: this.state.editingName,
+      });
+
+      const newState = {
+        ...this.state,
+        editingTodoId: '',
+        editingName: '',
+      }
+
+      newState.todos = this.state.todos.map((_todo) => {
+        const newTodo: Todo = {
+          ..._todo,
+        }
+
+        if (_todo.todoId === this.state.editingTodoId) {
+          newTodo.name = this.state.editingName;
+        }
+
+        return newTodo;
+      });
+
+      this.setState(newState);
+    }
+  }
+
+  onCancelEditNameClick = () => {
+    this.setState({
+      ...this.state,
+      editingTodoId: '',
+    });
   }
 
   async componentDidMount() {
@@ -156,6 +207,39 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     )
   }
 
+  renderName(todo: Todo) {
+
+    const { todoId, name } = todo
+
+    const isEditing = todoId === this.state.editingTodoId;
+
+    const renderEditButton = () => {
+      return (
+        <>
+          <button onClick={() => this.onEditNameButtonClick(todo)}>{isEditing ? 'update' : 'edit'}</button>
+          {isEditing && <button onClick={() => this.onCancelEditNameClick()}>cancel</button>}
+        </>
+      )
+    }
+
+    return (
+      <>
+        {
+          isEditing ? (
+            <>
+              <input type="text" value={this.state.editingName} onChange={this.onEditingNameChange}/>
+            </>
+          ) : (
+            <>
+              {name}
+            </>
+          )
+        }
+        {renderEditButton()}
+      </>
+    );
+  }
+
   renderTodosList() {
     return (
       <Grid padded>
@@ -169,7 +253,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
                 />
               </Grid.Column>
               <Grid.Column width={10} verticalAlign="middle">
-                {todo.name}
+                {this.renderName(todo)}
               </Grid.Column>
               <Grid.Column width={3} floated="right">
                 {todo.dueDate}
