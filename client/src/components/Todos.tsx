@@ -29,6 +29,7 @@ interface TodosState {
   loadingTodos: boolean
   editingTodoId: string
   editingName: string
+  isUpdateButtonDisabled: boolean
 }
 
 export class Todos extends React.PureComponent<TodosProps, TodosState> {
@@ -38,6 +39,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     loadingTodos: true,
     editingTodoId: '',
     editingName: '',
+    isUpdateButtonDisabled: false,
   }
 
   handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,7 +96,18 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   }
 
   onEditingNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ editingName: event.target.value })
+    const value = event.target.value;
+    const newState = {
+      ...this.state,
+    };
+
+    console.log(value);
+
+    newState.isUpdateButtonDisabled = value.length === 0;
+    this.setState({
+      ...newState,
+      editingName: value,
+    });
   }
 
   onEditNameButtonClick = async (todo: Todo) => {
@@ -216,7 +229,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     const renderEditButton = () => {
       return (
         <>
-          <button onClick={() => this.onEditNameButtonClick(todo)}>{isEditing ? 'update' : 'edit'}</button>
+          <button onClick={() => this.onEditNameButtonClick(todo)} disabled={isEditing && this.state.isUpdateButtonDisabled}>{isEditing ? 'update' : 'edit'}</button>
           {isEditing && <button onClick={() => this.onCancelEditNameClick()}>cancel</button>}
         </>
       )
